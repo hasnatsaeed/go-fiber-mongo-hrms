@@ -5,7 +5,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
-	"time"
 )
 
 type Employee struct {
@@ -21,7 +20,7 @@ var db *mongo.Database
 var ctx context.Context
 
 func init() {
-	ctx, _ = context.WithTimeout(context.Background(), 30*time.Second)
+	ctx = context.TODO()
 }
 func Connect() {
 	uri := "mongodb://root:jenkins@mongodb:27017"
