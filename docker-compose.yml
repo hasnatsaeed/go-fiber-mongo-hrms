@@ -1,0 +1,20 @@
+version: '3.9'
+
+services:
+  app:
+    image: go-fiber-mongo-hrms
+    container_name: app
+    restart: always
+    ports:
+      - "9010:9010"
+    depends_on:
+      - "mongodb"
+  mongodb:
+    image: mongo:5.0
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=jenkins
+      - MONGO_INITDB_DATABASE=go-fiber-mongo-hrms
