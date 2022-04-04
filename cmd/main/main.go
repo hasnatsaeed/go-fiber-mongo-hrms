@@ -27,13 +27,13 @@ func main() {
 	//Disconnect mongodb client on `main` exit.
 	defer database.Disconnect()
 
-	log.Panic(application.Listen(":9010"))
+	log.Println(application.Listen(":9010"))
 
 }
 
 func registerShutdownHook(application *fiber.App) {
 	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
 	go func() {
 		_ = <-c
 		fmt.Println("Application gracefully shutting down...")
