@@ -18,7 +18,7 @@ var client *mongo.Client
 var db *mongo.Database
 
 func Connect() {
-	uri := "mongodb://root:jenkins@127.0.0.1:27017"
+	uri := "mongodb://root:jenkins@mongodb:27017"
 	dbClient, err := mongo.NewClient(options.Client().ApplyURI(uri))
 	if err != nil {
 		panic(err)
