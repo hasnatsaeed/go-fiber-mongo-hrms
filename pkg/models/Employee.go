@@ -1,9 +1,12 @@
 package models
 
 import (
+	"context"
 	"github/hasnatsaeed/go-fiber-mongo-hrms/pkg/configs/database"
 	"go.mongodb.org/mongo-driver/bson"
 )
+
+const EMPLOYEE_COLLECTION string = "employees"
 
 type Employee struct {
 	ID     string  `json:"id"`
@@ -14,37 +17,34 @@ type Employee struct {
 
 func (employee *Employee) CreateEmployee() (*Employee, error) {
 
-	collection := database.GetDb().Collection("employees")
-	id, errInsert := collection.InsertOne(*database.GetCtx(), employee)
+	collection := database.GetCollection(EMPLOYEE_COLLECTION)
+	id, errInsert := collection.InsertOne(context.TODO(), employee)
 	if errInsert != nil {
 		return nil, errInsert
 	}
 
-	getByIdFilter := bson.D{{Key: "_id", Value: id.InsertedID}}
+	insertedEmployee := &Employee{}
+	errorFetch := collection.FindOne(context.TODO(), bson.D{{Key: "_id", Value: id.InsertedID}}).Decode(insertedEmployee)
 
-	record := collection.FindOne(*database.GetCtx(), getByIdFilter)
-
-	createdEmployee := &Employee{}
-
-	errDecodeToEmployee := record.Decode(createdEmployee)
-	if errDecodeToEmployee != nil {
-		return nil, errDecodeToEmployee
+	if errorFetch != nil {
+		return nil, errorFetch
 	}
 
-	return createdEmployee, nil
+	return insertedEmployee, nil
 }
 
 func GetEmployees() ([]Employee, error) {
 
-	collection := database.GetDb().Collection("employees")
+	collection := database.GetCollection(EMPLOYEE_COLLECTION)
 
-	employees := make([]Employee, 10)
-	records, errFindRecords := collection.Find(*database.GetCtx(), bson.D{{}})
+	cursor, errFindRecords := collection.Find(context.TODO(), bson.D{{}})
 	if errFindRecords != nil {
 		return nil, errFindRecords
 	}
 
-	errDecodeToEmployees := records.All(*database.GetCtx(), &employees)
+	employees := make([]Employee, 10)
+
+	errDecodeToEmployees := cursor.All(context.TODO(), &employees)
 	if errDecodeToEmployees != nil {
 		return nil, errDecodeToEmployees
 	}
@@ -52,21 +52,35 @@ func GetEmployees() ([]Employee, error) {
 }
 
 func GetEmployee(ID string) (*Employee, error) {
-	collection := database.GetDb().Collection("employees")
-	record := collection.FindOne(*database.GetCtx(), bson.D{{"id", ID}})
+	collection := database.GetCollection(EMPLOYEE_COLLECTION)
 
 	employee := &Employee{}
-	errDecodeToEmployee := record.Decode(employee)
-	if errDecodeToEmployee != nil {
-		return nil, errDecodeToEmployee
+
+	errorFetch := collection.FindOne(context.TODO(), bson.D{{"id", ID}}).Decode(employee)
+
+	if errorFetch != nil {
+		return nil, errorFetch
 	}
 	return employee, nil
 }
 
 func DeleteEmployee(ID string) (int64, error) {
-	collection := database.GetDb().Collection("employees")
-	deleteCount, errDelete := collection.DeleteOne(*database.GetCtx(), bson.D{{"id", ID}})
+	collection := database.GetCollection(EMPLOYEE_COLLECTION)
+	deleteResult, errDelete := collection.DeleteOne(context.TODO(), bson.D{{"id", ID}})
+	return deleteResult.DeletedCount, errDelete
+}
 
-	return deleteCount.DeletedCount, errDelete
+func UpdateEmployee(ID string, employee Employee) (int64, error) {
+	collection := database.GetCollection(EMPLOYEE_COLLECTION)
 
+	update := bson.D{{"$set", bson.D{
+		{"name", employee.Name},
+		{"salary", employee.Salary},
+		{"age", employee.Age}}}}
+
+	record, errUpdate := collection.UpdateOne(context.TODO(), bson.D{{"id", ID}}, update)
+	if errUpdate != nil {
+		return 0, errUpdate
+	}
+	return record.ModifiedCount, errUpdate
 }

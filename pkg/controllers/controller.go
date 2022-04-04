@@ -41,7 +41,22 @@ func GetEmployee(ctx *fiber.Ctx) error {
 }
 
 func UpdateEmployee(ctx *fiber.Ctx) error {
-	return nil
+	employee := models.Employee{}
+	errParsing := ctx.BodyParser(&employee)
+	if errParsing != nil {
+		panic(errParsing)
+	}
+	updateCount, errUpdate := models.UpdateEmployee(ctx.Params("id"), employee)
+
+	if errUpdate != nil {
+		return ctx.Status(fiber.StatusInternalServerError).SendString(errUpdate.Error())
+	}
+
+	if updateCount < 1 {
+		return ctx.Status(fiber.StatusNotFound).SendString("record not found")
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON("Updated")
 }
 
 func DeleteEmployee(ctx *fiber.Ctx) error {

@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"syscall"
 )
 
 func main() {
@@ -32,7 +33,7 @@ func main() {
 
 func registerShutdownHook(application *fiber.App) {
 	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		_ = <-c
 		fmt.Println("Application gracefully shutting down...")

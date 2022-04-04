@@ -17,13 +17,8 @@ type Employee struct {
 var client *mongo.Client
 var db *mongo.Database
 
-var ctx context.Context
-
-func init() {
-	ctx = context.TODO()
-}
 func Connect() {
-	uri := "mongodb://root:jenkins@mongodb:27017"
+	uri := "mongodb://root:jenkins@127.0.0.1:27017"
 	dbClient, err := mongo.NewClient(options.Client().ApplyURI(uri))
 	if err != nil {
 		panic(err)
@@ -32,7 +27,7 @@ func Connect() {
 	client = dbClient
 
 	log.Println("connecting mongodb client...")
-	err = client.Connect(ctx)
+	err = client.Connect(context.TODO())
 
 	if err != nil {
 		panic(err)
@@ -45,7 +40,7 @@ func Connect() {
 
 func Disconnect() {
 	log.Println("disconnecting mongodb client...")
-	err := client.Disconnect(ctx)
+	err := client.Disconnect(context.TODO())
 	if err != nil {
 		panic(err)
 	}
@@ -53,10 +48,6 @@ func Disconnect() {
 
 }
 
-func GetDb() *mongo.Database {
-	return db
-}
-
-func GetCtx() *context.Context {
-	return &ctx
+func GetCollection(collection string) *mongo.Collection {
+	return db.Collection(collection)
 }
