@@ -6,15 +6,19 @@ services:
     container_name: app
     restart: always
     ports:
-      - "9010:9010"
+      - "${APP_HOST_PORT}:${APP_PORT}"
+    env_file:
+      - .env
     depends_on:
       - "mongodb"
   mongodb:
     image: mongo:5.0
-    container_name: mongodb
+    container_name: ${DB_HOST}
     ports:
-      - "27017:27017"
+      - "${DB_HOST_PORT}:${DB_PORT}"
+    env_file:
+      - .env
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=root
-      - MONGO_INITDB_ROOT_PASSWORD=jenkins
-      - MONGO_INITDB_DATABASE=go-fiber-mongo-hrms
+      - MONGO_INITDB_ROOT_USERNAME=${DB_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${DB_PASS}
+      - MONGO_INITDB_DATABASE=${DB_NAME}
